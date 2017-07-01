@@ -96,7 +96,7 @@ sub find_in_path
 	    return;
 	}
     }
-    warn "$THIS: No `$b' in path.\n"
+    warn "$THIS: No '$b' in path.\n"
 	unless $QUIET;
     $exit = 1;
 }
@@ -121,7 +121,7 @@ for my $arg (@ARGV)
 	my $e = $!;
 	$e = "Not a symbolic link"
 	    if $e eq "Invalid argument";
-	warn "readlink `$arg': $e"
+	warn "readlink '$arg': $e"
 	    unless $QUIET;
 	$exit = 1;
 	next;
@@ -138,13 +138,13 @@ for my $arg (@ARGV)
     {
 	unless (unlink $arg)
 	{
-	    warn "unlink `$arg': $!";
+	    warn "unlink '$arg': $!";
 	    $exit = 1;
 	    next;
 	}
 	unless (symlink $_, $arg)
 	{
-	    warn "symlink `$arg': $!";
+	    warn "symlink '$arg': $!";
 	    $exit = 1;
 	    next;
 	}
