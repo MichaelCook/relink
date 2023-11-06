@@ -1,50 +1,23 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
-# Edit the linked-to name of a symbolic link.
+# Edit the target of a symbolic link.
 #
 # Example:
 #  relink 's/old/new/' foo
 #
 
-# This software is distributed under the "Simplified BSD license":
-#
-# Copyright Michael Cook <michael@waxrat.com>. All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-#    1. Redistributions of source code must retain the above copyright notice,
-#       this list of conditions and the following disclaimer.
-#
-#    2. Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 use strict;
 use warnings;
-use File::Basename;
 use Getopt::Long;
+use File::Basename;
 
 my ($THIS) = $0 =~ m%([^/]+)$%;
 my $USAGE = <<EOF;
 usage: $THIS perlexpr files
-   or: $THIS -p path files
 EOF
 
 my $QUIET;
 my $FORCE;
-my $PATH;
 my $DRYRUN;
 
 Getopt::Long::config("bundling");
@@ -65,16 +38,6 @@ GetOptions
  # to update the owner, group and other inode fields.
  #
 
- "path|p=s" => \$PATH,
- #
- # Examine the directories in `path' to decide the new link.  Read the
- # symlink, take the basename of that pathname, and search the $PATH
- # directories for that name.  If found, the symlink is updated to point at
- # that name.
- #
- # Example: relink -p \$PATH ~/bin/*"
- #
-
  "dry-run|n" => \$DRYRUN,
  #
  # Don't actually change any links.
@@ -83,35 +46,9 @@ GetOptions
 or die $USAGE;
 
 my $exit = 0;
-my @PATH;
 
-sub find_in_path
-{
-    my $b = basename $_;
-    for my $p (@PATH)
-    {
-	if (-e "$p/$b")
-	{
-	    $_ = "$p/$b";
-	    return;
-	}
-    }
-    warn "$THIS: No '$b' in path.\n"
-	unless $QUIET;
-    $exit = 1;
-}
-
-my $OP;
-if ($PATH)
-{
-    $OP = "find_in_path()";
-    @PATH = split /:/, $PATH, -1;
-}
-else
-{
-    @ARGV > 1 or die $USAGE;
-    $OP = shift;
-}
+@ARGV > 1 or die $USAGE;
+my $OP = shift;
 
 for my $arg (@ARGV)
 {
